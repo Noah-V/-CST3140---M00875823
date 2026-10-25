@@ -11,7 +11,6 @@
 	<body>
 		<div id="div1">
 			<p>Good morning, {{fullName}}.</p>
-			<!-- <p>You have {{unreadEmails}} unread Emails and (???) emails in total.</p> -->
 			<p>You have {{totalEmails}} emails in total.</p>
 
 			<button v-on:click="readEmail()" v-bind:disabled="!canReadEmail">Read an email</button>

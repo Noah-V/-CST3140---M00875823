@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Task 4 Coursework</title>
+		<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+	</head>
+	<body>
+		<div
+			id="lessonDeets"
+			style="border: 1rem; height: 500px; border-color: black; border-width: 1rem; display: flex; align-items: center; flex-direction: column">
+			<h3>Subject: {{subject}}</h3>
+			<h3>Location: {{location}}</h3>
+			<h3>Price: {{price}}</h3>
+			<img v-bind:src="imageProps.path" v-bind:alt="imageProps.alt" width="300" />
+			<form style="display: none">
+				<div>
+					<label>Subject</label>
+					<input title="Subject" />
+				</div>
+			</form>
+		</div>
+		<script type="module">
+			const { createApp } = Vue;
+
+			createApp({
+				data() {
+					return {
+						subject: "Computer Science",
+						location: "Mauritius",
+						price: "4,000",
+						imageProps: {
+							path: "images/example-class.jpg",
+							alt: "Picture of classroom",
+						},
+					};
+				},
+			}).mount("#lessonDeets");
+		</script>
+	</body>
+</html>
