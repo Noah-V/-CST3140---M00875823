@@ -9,18 +9,20 @@
 	<body>
 		<div id="app">
 			<div
-				v-if="!displayCart"
+				v-if="!cartDetails.displayCart"
 				id="lessonDeets"
 				style="border: 1rem; height: 500px; border-color: black; border-width: 1rem; display: flex; align-items: center; flex-direction: column">
-				<h3>Subject: {{subject}}</h3>
-				<h3>Location: {{location}}</h3>
-				<h3>Price: {{price}}</h3>
-				<h3>Availability: {{availability}}</h3>
-				<img v-bind:src="imageProps.path" v-bind:alt="imageProps.alt" width="300" style="margin-bottom: 10px" />
-				<button v-bind:disabled="!canAddToCart" v-on:click="addToCart()" style="margin-bottom: 10px">Add To Cart</button>
-				<button v-bind:disabled="cart.length === 0" v-on:click="toggleCart()" style="margin-bottom: 10px">Shopping Cart</button>
+				<div v-for="lesson in lessons">
+					<h3>Subject: {{lesson.subject}}</h3>
+					<h3>Location: {{lesson.location}}</h3>
+					<h3>Price: {{lesson.price}}</h3>
+					<h3>Availability: {{lesson.availability}}</h3>
+					<img v-bind:src="lesson.imageProps.path" v-bind:alt="lesson.imageProps.alt" width="300" style="margin-bottom: 10px" />
+					<button v-bind:disabled="!canAddToCart(lesson)" v-on:click="addToCart(lesson.id)" style="margin-bottom: 10px">Add To Cart</button>
+				</div>
+				<!-- <button v-bind:disabled="cart.length === 0" v-on:click="toggleCart()" style="margin-bottom: 10px">Shopping Cart</button> -->
 			</div>
-			<div v-else="displayCart">
+			<div v-else="cartDetails.displayCart">
 				<div>
 					<div style="display: flex; justify-content: space-between">
 						<h1>Shopping Cart</h1>
@@ -39,42 +41,80 @@
 			createApp({
 				data() {
 					return {
-						id: 1001,
-						subject: "Computer Science",
-						location: "Mauritius",
-						price: "4,000",
-						imageProps: {
-							path: "images/example-class.jpg",
-							alt: "Picture of classroom",
+						lessons: [
+							{
+								id: 1001,
+								subject: "Computer Science",
+								location: "Mauritius",
+								price: "4,000",
+								imageProps: {
+									path: "images/example-class.jpg",
+									alt: "Picture of classroom",
+								},
+								availability: 5,
+							},
+							{
+								id: 1002,
+								subject: "Mathematics",
+								location: "Mauritius",
+								price: "6,000",
+								imageProps: {
+									path: "images/class2.png",
+									alt: "Picture of classroom",
+								},
+								availability: 5,
+							},
+							{
+								id: 1003,
+								subject: "Law",
+								location: "Mauritius",
+								price: "9,000",
+								imageProps: {
+									path: "images/class3.png",
+									alt: "Picture of classroom",
+								},
+								availability: 5,
+							},
+						],
+						cartDetails: {
+							cart: [],
+							displayCart: false,
+							showCheckoutCount: false,
 						},
-						availability: 2,
-						cart: [],
-						displayCart: false,
-						showCheckoutCount: false,
 					};
 				},
 
 				computed: {
-					canAddToCart() {
-						if (this.availability > 0) return true;
-					},
-
 					numberOfItems() {
-						return this.cart.length;
+						return this.cartDetails.cart.length;
 					},
 				},
 
 				methods: {
-					addToCart() {
-						this.availability = this.availability - 1;
-						this.cart.push(this.id);
-						this.cart.forEach((item) => console.log(item));
-						console.log("Cart Length", this.cart.length);
+					addToCart(id) {
+						var lessons = this.lessons;
+						for (var i = 0; i < lessons.length; i++) {
+							if (lessons[i].id === id) {
+								this.cartDetails.cart.push(lessons[i].id);
+								lessons[i].availability -= 1;
+								console.log(lessons[i].availability);
+							}
+						}
+					},
+
+					canAddToCart(lesson) {
+						var lessons = this.lessons;
+						if (lessons.includes(lesson)) {
+							if (lesson.availability < 1) {
+								return false;
+							} else return true;
+						}
+						return;
 					},
 
 					toggleCart() {
-						this.displayCart = !this.displayCart;
-						console.log("Shopping Cart Status", this.displayCart);
+						this.cartDetails.displayCart = !this.cartDetails.displayCart;
+						console.log("Shopping Cart Status", this.cartDetails.displayCart);
 					},
 
 					toggleCheckoutCount() {
