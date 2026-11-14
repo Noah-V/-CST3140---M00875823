@@ -20,7 +20,7 @@
 					<img v-bind:src="lesson.imageProps.path" v-bind:alt="lesson.imageProps.alt" width="300" style="margin-bottom: 10px" />
 					<button v-bind:disabled="!canAddToCart(lesson)" v-on:click="addToCart(lesson.id)" style="margin-bottom: 10px">Add To Cart</button>
 				</div>
-				<!-- <button v-bind:disabled="cart.length === 0" v-on:click="toggleCart()" style="margin-bottom: 10px">Shopping Cart</button> -->
+				<button v-bind:disabled="cartDetails.cart.length === 0" v-on:click="toggleCart()" style="margin-bottom: 10px">Shopping Cart</button>
 			</div>
 			<div v-else="cartDetails.displayCart">
 				<div>
@@ -28,8 +28,22 @@
 						<h1>Shopping Cart</h1>
 						<button v-on:click="toggleCart()">Back</button>
 					</div>
+					<div class="customer-input-forms">
+						<div>
+							<label>First Name</label>
+							<input v-model="order.firstName" />
+						</div>
+						<div>
+							<label>Last Name</label>
+							<input v-model="order.lastName" />
+						</div>
+						<div>
+							<label>Telephone</label>
+							<input type="tel" v-model="order.telephone" />
+						</div>
+					</div>
 					<div style="display: flex; align-items: center; text-align: center; gap: 10px">
-						<button v-on:click="toggleCheckoutCount()">Checkout</button>
+						<button v-bind:disabled="!canCheckOut" v-on:click="toggleCheckoutMessage()">Checkout</button>
 						<div v-if="showCheckoutCount">{{numberOfItems}}</div>
 					</div>
 				</div>
@@ -81,10 +95,23 @@
 							displayCart: false,
 							showCheckoutCount: false,
 						},
+						order: {
+							firstName: "",
+							lastName: "",
+							telephone: "",
+						},
 					};
 				},
 
 				computed: {
+					canCheckOut() {
+						if (this.order.firstName === "" || this.order.lastName === "" || this.order.telephone === "") {
+							console.log("Cannot checkout");
+							return false;
+						} else {
+							return true;
+						}
+					},
 					numberOfItems() {
 						return this.cartDetails.cart.length;
 					},
@@ -117,8 +144,14 @@
 						console.log("Shopping Cart Status", this.cartDetails.displayCart);
 					},
 
-					toggleCheckoutCount() {
-						this.showCheckoutCount = !this.showCheckoutCount;
+					toggleCheckoutMessage() {
+						console.log(this.cartDetails.cart);
+						alert("Your order has been confirmed");
+						this.cartDetails.cart = [];
+						this.toggleCart();
+						this.order.firstName = "";
+						this.order.lastName = "";
+						this.order.telephone = "";
 					},
 				},
 			}).mount("#app");
