@@ -54,7 +54,7 @@
                 <li v-if="getLessonCopies(lesson.id) > 0" class="cart-item">
                 {{lesson.subject}}
                 <div>{{getLessonCopies(lesson.id)}} items</div>
-                <button v-on:click="removeCartItem(lesson.id)">Remove Cart Item</button>
+                <button v-on:click="removeCartItem(lesson)">Remove Cart Item</button>
                 </li>
               </template>
 	          </ul>
@@ -136,7 +136,8 @@
 						for (var i = 0; i < lessons.length; i++) {
 							if (lessons[i].id === id) {
 								this.cartDetails.cart.push({...lessons[i]});
-                console.log(this.cartDetails.cart)
+                this.getLessonCopies(lessons[i].id)
+                console.log(JSON.stringify(this.cartDetails.cart, null, 2))
 								lessons[i].availability -= 1;
 								console.log(lessons[i].availability);
 							}
@@ -155,23 +156,28 @@
 
 					getLessonCopies(lessonId) {
 						var cartItemCopies = this.cartDetails.cart.filter((cartItem) => cartItem.id === lessonId).length;
-            console.log("Lesson id" + lessonId + " has " + cartItemCopies)
+            console.log("Lesson id" + lessonId + " has " + cartItemCopies + "copies")
             return cartItemCopies;
 					},
 
-          removeCartItem(lessonId){
-            var cart = this.cartDetails.cart;
-            cart.forEach(cartItem => {
-              if(cartItem.id === lessonId){
-                console.log(cartItem)
-                cart.pop(cartItem)
-              }
-            });
+          removeCartItem(lesson){
+            const cart = this.cartDetails.cart;
+            const index = cart.findLastIndex(itemInCart => itemInCart.id === lesson.id)
+            if(index !== -1){              
+              cart.splice(index, 1);
+              lesson.availability += 1;
+            }
+            if(cart.length < 1){
+              this.toggleCart();
+            }
           },
 
 					toggleCart() {
-						this.cartDetails.displayCart = !this.cartDetails.displayCart;
-						console.log("Shopping Cart Status", this.cartDetails.displayCart);
+             if (this.cartDetails.cart.length === 0) {
+    this.cartDetails.displayCart = false;
+  } else {
+    this.cartDetails.displayCart = !this.cartDetails.displayCart;
+  }
 					},
 
 					toggleCheckoutMessage() {
