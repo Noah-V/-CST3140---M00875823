@@ -10,18 +10,35 @@
 	<body>
 		<div id="app">
 			<div
-				v-if="!cartDetails.displayCart"
+				v-if="fetchError"
+				role="alert"
+				style="text-align: center; padding: 2rem">
+				<h1>404 - Lessons Not Found</h1>
+				<p>The lessons could not be loaded. Please try again later.</p>
+			</div>
+			<div
+				v-else-if="!cartDetails.displayCart"
 				id="lessonDeets"
 				style="border: 1rem; height: 500px; border-color: black; border-width: 1rem; display: flex; align-items: center; flex-direction: column">
-				<div v-for="lesson in lessons">
+        <div>
+          <label for="sortType">Sort By:</label>
+          <select v-model="sortType" id="sortType">
+            <option value="subject">Subject</option>
+            <option value="location">Location</option>
+            <option value="price">Price</option>
+            <option value="availability">Availability</option>
+          </select>
+          <button v-on:click="asc = !asc">{{asc ? 'Ascending' : 'Descending'}}</button>
+        </div>
+				<div v-for="lesson in sortedLessons">
 					<h3>Subject: {{lesson.subject}}</h3>
 					<h3>Location: {{lesson.location}}</h3>
 					<h3>Price: {{lesson.price}}</h3>
 					<h3>Availability: {{lesson.availability}}</h3>
-					<img v-bind:src="lesson.imageProps.path" v-bind:alt="lesson.imageProps.alt" width="300" style="margin-bottom: 10px" />
+					<img v-bind:src="baseUrl + '/' + lesson.imageProps.path" v-bind:alt="lesson.imageProps.alt" width="300" style="margin-bottom: 10px" />
 					<button v-bind:disabled="!canAddToCart(lesson)" v-on:click="addToCart(lesson.id)" style="margin-bottom: 10px">Add To Cart</button>
 				</div>
-				<button v-bind:disabled="cartDetails.cart.length === 0" v-on:click="toggleCart()" style="margin-bottom: 10px">Shopping Cart</button>
+				<button v-bind:disabled="cartDetails.cart.length === 0" v-on:click="toggleCart()" style="margin-bottom: 10px">Check Out</button>
 			</div>
 			<div v-else>
 				<div>
@@ -68,53 +85,27 @@
 			createApp({
 				data() {
 					return {
-						lessons: [
-							{
-								id: 1001,
-								subject: "Computer Science",
-								location: "Mauritius",
-								price: "4,000",
-								imageProps: {
-									path: "images/example-class.jpg",
-									alt: "Picture of classroom",
-								},
-								availability: 5,
-							},
-							{
-								id: 1002,
-								subject: "Mathematics",
-								location: "Mauritius",
-								price: "6,000",
-								imageProps: {
-									path: "images/class2.png",
-									alt: "Picture of classroom",
-								},
-								availability: 5,
-							},
-							{
-								id: 1003,
-								subject: "Law",
-								location: "Mauritius",
-								price: "9,000",
-								imageProps: {
-									path: "images/class3.png",
-									alt: "Picture of classroom",
-								},
-								availability: 5,
-							},
-						],
+            asc: true,
+            baseUrl: "http://localhost:3000",
+						fetchError: false,
 						cartDetails: {
 							cart: [],
 							displayCart: false,
 							showCheckoutCount: false,
 						},
+						lessons: [],
 						order: {
 							firstName: "",
 							lastName: "",
 							telephone: "",
 						},
+            sortType: "price",
 					};
 				},
+
+        created(){
+          this.fetchLessonData();
+        },
 
 				computed: {
 					canCheckOut() {
@@ -125,10 +116,34 @@
 							return true;
 						}
 					},
+
 					numberOfItems() {
 						return this.cartDetails.cart.length;
 					},
+          
+          sortedLessons(){
+            const sortDirection = this.asc ? 1 : -1;
+            const sortedLessons = [...this.lessons].sort((a, b) => {
+              const aValue = a[this.sortType];
+              const bValue = b[this.sortType];
+              
+              if(this.sortType === "price"){
+                const numA = Number(String(aValue).replace(/,/g, ""));
+                const numB = Number(String(bValue).replace(/,/g, ""));
+                return (numA - numB) * sortDirection;
+              }else if(typeof aValue === "string" && typeof bValue === "string"){
+                return aValue.localeCompare(bValue) * sortDirection;
+              }
+              else if(typeof aValue === "number" && typeof bValue === "number"){
+                return (aValue - bValue) * sortDirection;
+              }
+            })
+            return sortedLessons
+          },
+
 				},
+
+
 
 				methods: {
 					addToCart(id) {
@@ -142,7 +157,7 @@
 								console.log(lessons[i].availability);
 							}
 						}
-					},
+					},  
 
 					canAddToCart(lesson) {
 						var lessons = this.lessons;
@@ -174,14 +189,18 @@
 
 					toggleCart() {
              if (this.cartDetails.cart.length === 0) {
-    this.cartDetails.displayCart = false;
-  } else {
-    this.cartDetails.displayCart = !this.cartDetails.displayCart;
-  }
+              this.cartDetails.displayCart = false;
+          } else {
+              this.cartDetails.displayCart = !this.cartDetails.displayCart;
+            }
 					},
 
-					toggleCheckoutMessage() {
-						console.log(this.cartDetails.cart);
+					async toggleCheckoutMessage() {
+						const orderSent = await this.postOrder();
+						if (!orderSent) {
+							alert("Sorry, your order could not be submitted. Please try again.");
+							return;
+						}
 						alert("Your order has been confirmed");
 						this.cartDetails.cart = [];
 						this.toggleCart();
@@ -189,6 +208,49 @@
 						this.order.lastName = "";
 						this.order.telephone = "";
 					},
+
+          async postOrder(){
+            const url = this.baseUrl + '/orders';
+            const newOrder = {
+              firstName: this.order.firstName,
+              lastName: this.order.lastName,
+              telephone: this.order.telephone,
+              lessonIDs: this.cartDetails.cart.map(lesson => lesson.id),
+              spaces: this.cartDetails.cart.length,
+            };
+            const options = {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(newOrder)
+            };
+            try {
+              const response = await fetch(url, options);
+              const result = await response.json();
+              console.log(result);
+              return response.ok;
+            } catch (error) {
+              console.error('Failed to send order:', error);
+              return false;
+            }
+          },
+
+          async fetchLessonData(){
+            const url = this.baseUrl + '/lessons';
+						try {
+							const response = await fetch(url);
+              console.log(response)
+							if (!response.ok) {
+								this.fetchError = true;
+								return;
+							}
+							this.lessons = await response.json();
+						} catch (error) {
+							this.fetchError = true;
+							console.error('Failed to fetch lessons:', error);
+						}
+          }
 				},
 			}).mount("#app");
 		</script>
