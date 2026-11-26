@@ -14,7 +14,7 @@
 				role="alert"
 				style="text-align: center; padding: 2rem">
 				<h1>404 - Lessons Not Found</h1>
-				<p>The lessons could not be loaded. Please try again later.</p>
+				<p>{{fetchErrorMessage || "The lessons could not be loaded. Please try again later."}}</p>
 			</div>
 			<div
 				v-else-if="!cartDetails.displayCart"
@@ -64,6 +64,12 @@
 						<button v-bind:disabled="!canCheckOut" v-on:click="toggleCheckoutMessage()">Checkout</button>
 						<div v-if="cartDetails.showCheckoutCount">{{numberOfItems}}</div>
 					</div>
+					<div
+						v-if="orderError"
+						role="alert"
+						style="margin-top: 12px; padding: 10px 14px; border: 1px solid #d32f2f; background-color: #fdecea; color: #b71c1c; border-radius: 4px">
+						<strong>Order failed:</strong> {{orderError}}
+					</div>
 					<div class="cart-summary">
 	          <h2>Cart Summary</h2>
 	          <ul class="cart-item-list">
@@ -88,6 +94,8 @@
             asc: true,
             baseUrl: "http://localhost:3000",
 						fetchError: false,
+						fetchErrorMessage: "",
+						orderError: "",
 						cartDetails: {
 							cart: [],
 							displayCart: false,
@@ -150,7 +158,7 @@
 						var lessons = this.lessons;
 						for (var i = 0; i < lessons.length; i++) {
 							if (lessons[i].id === id) {
-								this.cartDetails.cart.push({...lessons[i]});
+								this.cartDetails.cart.push(lessons[i].id);
                 this.getLessonCopies(lessons[i].id)
                 console.log(JSON.stringify(this.cartDetails.cart, null, 2))
 								lessons[i].availability -= 1;
@@ -170,14 +178,14 @@
 					},
 
 					getLessonCopies(lessonId) {
-						var cartItemCopies = this.cartDetails.cart.filter((cartItem) => cartItem.id === lessonId).length;
+						var cartItemCopies = this.cartDetails.cart.filter((cartItemId) => cartItemId === lessonId).length;
             console.log("Lesson id" + lessonId + " has " + cartItemCopies + "copies")
             return cartItemCopies;
 					},
 
           removeCartItem(lesson){
             const cart = this.cartDetails.cart;
-            const index = cart.findLastIndex(itemInCart => itemInCart.id === lesson.id)
+            const index = cart.findLastIndex(itemId => itemId === lesson.id)
             if(index !== -1){              
               cart.splice(index, 1);
               lesson.availability += 1;
@@ -188,6 +196,7 @@
           },
 
 					toggleCart() {
+            this.orderError = "";
              if (this.cartDetails.cart.length === 0) {
               this.cartDetails.displayCart = false;
           } else {
@@ -196,18 +205,60 @@
 					},
 
 					async toggleCheckoutMessage() {
+						this.orderError = "";
 						const orderSent = await this.postOrder();
 						if (!orderSent) {
-							alert("Sorry, your order could not be submitted. Please try again.");
 							return;
+						}
+						const uniqueLessonIds = [...new Set(this.cartDetails.cart)];
+						for (let i = 0; i < uniqueLessonIds.length; i++) {
+							const lesson = this.lessons.find(item => item.id === uniqueLessonIds[i]);
+							if (lesson) {
+								const updated = await this.updateLesson(lesson);
+								if (!updated) {
+									return;
+								}
+							}
 						}
 						alert("Your order has been confirmed");
 						this.cartDetails.cart = [];
-						this.toggleCart();
 						this.order.firstName = "";
 						this.order.lastName = "";
 						this.order.telephone = "";
+						this.toggleCart();
+						await this.fetchLessonData();
 					},
+
+          async updateLesson(lesson){
+            let updateBody = {
+              availability: lesson.availability
+            };
+            const url = this.baseUrl + "/lessons/" + lesson._id;
+            const options = {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(updateBody)
+            };
+            try {
+              const response = await fetch(url, options);
+              let result = {};
+              try {
+                result = await response.json();
+              } catch (e) {}
+              console.log(result);
+              if (!response.ok) {
+                this.orderError = result.error || ("Server error (" + response.status + "): could not update lesson availability.");
+                return false;
+              }
+              return true;
+            } catch (error) {
+              console.error('Failed to update lesson:', error);
+              this.orderError = "Could not reach the server to update lesson availability.";
+              return false;
+            }
+          },
 
           async postOrder(){
             const url = this.baseUrl + '/orders';
@@ -215,7 +266,7 @@
               firstName: this.order.firstName,
               lastName: this.order.lastName,
               telephone: this.order.telephone,
-              lessonIDs: this.cartDetails.cart.map(lesson => lesson.id),
+              lessonIDs: [...this.cartDetails.cart],
               spaces: this.cartDetails.cart.length,
             };
             const options = {
@@ -227,11 +278,20 @@
             };
             try {
               const response = await fetch(url, options);
-              const result = await response.json();
+              let result = {};
+              try {
+                result = await response.json();
+              } catch (e) {}
               console.log(result);
-              return response.ok;
+              if (!response.ok) {
+                this.orderError = result.error || ("Server error (" + response.status + "): could not submit order.");
+                return false;
+              }
+              this.orderError = "";
+              return true;
             } catch (error) {
               console.error('Failed to send order:', error);
+              this.orderError = "Could not reach the server. Please check that the backend is running.";
               return false;
             }
           },
@@ -242,11 +302,17 @@
 							const response = await fetch(url);
               console.log(response)
 							if (!response.ok) {
+                let errData = {};
+                try {
+                  errData = await response.json();
+                } catch (e) {}
+								this.fetchErrorMessage = errData.error || ("Server error (" + response.status + "): could not load lessons.");
 								this.fetchError = true;
 								return;
 							}
 							this.lessons = await response.json();
 						} catch (error) {
+							this.fetchErrorMessage = "Could not connect to the server. Make sure the backend is running.";
 							this.fetchError = true;
 							console.error('Failed to fetch lessons:', error);
 						}
