@@ -1,3 +1,200 @@
+body.home-page {
+	font-family: "Montserrat", sans-serif;
+	margin: 0;
+	padding: 0;
+	min-height: 100vh;
+	color: white;
+	background: linear-gradient(135deg, #8b0000, #ff1a00);
+}
+
+header {
+	padding: 24px 7vw;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: relative;
+	z-index: 1;
+	box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.08);
+}
+
+.logo h2 {
+	margin: 0;
+	font-size: 26px;
+	font-weight: 700;
+	color: white;
+}
+
+nav ul {
+	list-style: none;
+	display: flex;
+	gap: 36px;
+	margin: 0;
+	padding: 0;
+}
+
+nav li {
+	position: relative;
+}
+
+nav a {
+	color: rgba(255, 255, 255, 0.85);
+	text-decoration: none;
+	font-size: 16px;
+	letter-spacing: 0.5px;
+	transition: 0.3s;
+}
+
+nav a:hover,
+nav a.active {
+	color: #ffffff;
+	font-weight: 700;
+}
+
+.hero {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 48px;
+	max-width: 1500px;
+	margin: 0 auto;
+	min-height: calc(100vh - 84px);
+	padding: 0 7vw;
+	position: relative;
+	box-sizing: border-box;
+}
+
+.hero-text-container {
+	max-width: 560px;
+	flex-shrink: 0;
+}
+
+.hero-text-container h1 {
+	font-size: clamp(48px, 5.5vw, 84px);
+	font-weight: 800;
+	line-height: 1.05;
+	margin: 0 0 24px;
+	text-transform: uppercase;
+	color: white;
+}
+
+.hero-text-container h1 span {
+	color: #ff4422;
+}
+
+.hero-text-container p {
+	font-size: clamp(15px, 1.15vw, 18px);
+	line-height: 1.75;
+	color: rgba(255, 255, 255, 0.88);
+	margin: 0 0 36px;
+}
+
+.button {
+	display: inline-block;
+	padding: 16px 42px;
+	border: 2px solid rgba(255, 255, 255, 0.75);
+	border-radius: 34px;
+	color: white;
+	text-decoration: none;
+	font-size: 16px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 1.2px;
+	transition: 0.3s;
+}
+
+.button:hover {
+	background-color: white;
+	color: #b30000;
+}
+
+.image-container {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 40px;
+}
+
+.hero-lesson-image {
+	width: clamp(280px, 34vw, 500px);
+	height: clamp(280px, 34vw, 500px);
+	margin: 0 auto;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 10px solid #4d0000;
+	box-shadow: 0 26px 55px rgba(0, 0, 0, 0.48);
+	animation: lessonBounce 2.6s ease-in-out infinite;
+	flex-shrink: 0;
+}
+
+@keyframes lessonBounce {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-18px);
+	}
+}
+
+.lesson-icons {
+	display: flex;
+	flex-direction: column;
+	gap: 22px;
+	flex-shrink: 0;
+}
+
+.lesson-icon {
+	width: 78px;
+	height: 78px;
+	border-radius: 50%;
+	background-color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+	border: 3px solid #4d0000;
+	transition: 0.3s;
+	overflow: hidden;
+}
+
+.lesson-icon img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.lesson-icon:hover,
+.lesson-icon.active {
+	transform: scale(1.1);
+	border-color: #ffcc00;
+}
+
+.more-button {
+	position: absolute;
+	bottom: 34px;
+	right: 7vw;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: white;
+	text-decoration: none;
+	font-size: 16px;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	transition: 0.3s;
+}
+
+.more-button .arrow {
+	font-size: 22px;
+	line-height: 1;
+}
+
+.more-button:hover {
+	opacity: 0.8;
+}
+
 .cart-item {
 	display: flex;
 	flex-direction: row;

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Lesson Store</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet" />
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body class="home-page">
+		<header>
+			<div class="logo">
+				<h2>Lesson Store</h2>
+			</div>
+			<nav>
+				<ul>
+					<li><a href="index.html" class="active">Home</a></li>
+					<li><a href="Coursework.html">Coursework</a></li>
+					<li><a href="Github.html">About</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<section class="hero">
+			<div class="hero-text-container">
+				<h1>BOOK<br /><span>YOUR LESSONS</span></h1>
+				<p>
+					Browse after-school classes and activities across Computer Science, Mathematics, Law, Cyber Security, and more. Pick your subjects, check
+					live availability, and book your spot in seconds.
+				</p>
+				<a href="Coursework.html" class="button">Shop Now</a>
+			</div>
+
+			<div class="image-container">
+				<img src="./images/computer-science.png" alt="Featured lesson" class="hero-lesson-image" />
+				<div class="lesson-icons">
+					<div class="lesson-icon active" data-image="./images/computer-science.png">
+						<img src="./images/computer-science.png" alt="Computer Science" />
+					</div>
+					<div class="lesson-icon" data-image="./images/mathematics.png">
+						<img src="./images/mathematics.png" alt="Mathematics" />
+					</div>
+					<div class="lesson-icon" data-image="./images/law.png">
+						<img src="./images/law.png" alt="Law" />
+					</div>
+					<div class="lesson-icon" data-imag e="./images/cybersecurity.png">
+						<img src="./images/cybersecurity.png" alt="Cyber Security" />
+					</div>
+				</div>
+			</div>
+
+			<a href="Coursework.html" class="more-button">
+				<span>More Lessons</span>
+				<span class="arrow">&rsaquo;</span>
+			</a>
+		</section>
+
+		<script src="script.js"></script>
+	</body>
+</html>
